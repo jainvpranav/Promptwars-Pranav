@@ -9,6 +9,7 @@ env:
   PROJECT_ID: promptwars-pranav
   REGION: us-central1
   SERVICE: travel-engine
+  SA_EMAIL: promptwars-pranav-git@promptwars-pranav.iam.gserviceaccount.com
   IMAGE: gcr.io/promptwars-pranav/travel-engine
 
 jobs:
