@@ -1,0 +1,46 @@
+.map {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}
+
+.noKey {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--c-cosmos);
+  color: var(--t-secondary);
+  text-align: center;
+  padding: var(--s-8);
+}
+.noKey p { font-size: 1rem; line-height: 1.7; }
+.noKey code { color: var(--c-aurora); background: var(--c-aurora-dim); padding: 2px 6px; border-radius: 4px; }
+
+/* ── Map pins ──────────────────────────────────────────── */
+.mapPin {
+  background: rgba(13, 26, 48, 0.9);
+  border: 1px solid var(--c-border2);
+  border-radius: var(--r-full);
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--t-secondary);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 150ms ease;
+  backdrop-filter: blur(8px);
+}
+.mapPin:hover {
+  background: rgba(0, 212, 255, 0.15);
+  border-color: var(--c-aurora);
+  color: var(--c-aurora);
+  transform: scale(1.05);
+}
+.mapPinActive {
+  background: rgba(0, 212, 255, 0.2) !important;
+  border-color: var(--c-aurora) !important;
+  color: var(--c-aurora) !important;
+  box-shadow: 0 0 16px rgba(0,212,255,0.4);
+}

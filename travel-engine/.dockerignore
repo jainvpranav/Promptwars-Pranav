@@ -1,0 +1,11 @@
+Dockerfile
+.dockerignore
+node_modules
+npm-debug.log
+README.md
+.next
+.git
+.agents
+walkthrough.md
+implementation_plan.md
+task.md
