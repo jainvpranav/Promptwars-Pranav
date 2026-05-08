@@ -1,37 +1,29 @@
+# cloudbuild.yaml  (place at repo root)
 steps:
-  # Build the Docker image with build arguments
-  - name: "gcr.io/cloud-builders/docker"
+  # Step 1: Build the Docker image from travel-engine/
+  - name: 'gcr.io/cloud-builders/docker'
     args:
-      - "build"
-      - "-t"
-      - "us-central1-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/promptwars-pranav:${SHORT_SHA}"
-      - "-t"
-      - "us-central1-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/promptwars-pranav:latest"
-      - "--build-arg"
-      - "GEMINI_API_KEY=${_GEMINI_API_KEY}"
-      - "."
+      - build
+      - -t
+      - europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/promptwars-pranav:$COMMIT_SHA
+      - ./travel-engine   # ← points to subfolder with your Dockerfile
 
-  # Push to Artifact Registry
-  - name: "gcr.io/cloud-builders/docker"
+  # Step 2: Push the image
+  - name: 'gcr.io/cloud-builders/docker'
     args:
-      - "push"
-      - "us-central1-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/promptwars-pranav:${SHORT_SHA}"
+      - push
+      - europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/promptwars-pranav:$COMMIT_SHA
 
-  # Deploy to Cloud Run
-  - name: "gcr.io/cloud-builders/run"
+  # Step 3: Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
     args:
-      - "deploy"
-      - "promptwars-pranav"
-      - "--image"
-      - "us-central1-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/promptwars-pranav:${SHORT_SHA}"
-      - "--region"
-      - "us-central1"
-      - "--port"
-      - "3000"
-      - "--set-env-vars"
-      - "GEMINI_API_KEY=${_GEMINI_API_KEY},NEXT_PUBLIC_MAPS_KEY=${_NEXT_PUBLIC_MAPS_KEY},NEXT_PUBLIC_FIREBASE_API_KEY=${_NEXT_PUBLIC_FIREBASE_API_KEY},NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=promptwars-pranav.firebaseapp.com,NEXT_PUBLIC_FIREBASE_PROJECT_ID=promptwars-pranav,NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=promptwars-pranav.appspot.com"
-      - "--allow-unauthenticated"
+      - run
+      - deploy
+      - promptwars-pranav
+      - --image=europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/promptwars-pranav:$COMMIT_SHA
+      - --region=europe-west1
+      - --platform=managed
 
 images:
-  - "us-central1-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/promptwars-pranav:${SHORT_SHA}"
-  - "us-central1-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/promptwars-pranav:latest"
+  - europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/promptwars-pranav:$COMMIT_SHA
