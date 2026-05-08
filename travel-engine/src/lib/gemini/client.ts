@@ -1,29 +1,51 @@
 // src/lib/gemini/client.ts
 // SERVER-ONLY — never import in client components
-import 'server-only';
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import "server-only";
+import {
+  GoogleGenerativeAI,
+  HarmCategory,
+  HarmBlockThreshold,
+} from "@google/generative-ai";
 
-const apiKey = process.env.GEMINI_API_KEY;
-if (!apiKey) throw new Error('GEMINI_API_KEY environment variable is not set');
+let genAI: GoogleGenerativeAI | null = null;
 
-const genAI = new GoogleGenerativeAI(apiKey);
+function getGenAI() {
+  if (!genAI) {
+    const apiKey =
+      process.env.GEMINI_API_KEY ||
+      (process.env.NODE_ENV === "production" ? "" : "dummy");
+    if (!apiKey)
+      throw new Error("GEMINI_API_KEY environment variable is not set");
+    genAI = new GoogleGenerativeAI(apiKey);
+  }
+  return genAI;
+}
 
-export const geminiModel = genAI.getGenerativeModel({
-  model: 'gemini-2.0-flash',
+export const geminiModel = getGenAI().getGenerativeModel({
+  model: "gemini-2.0-flash",
   systemInstruction: `You are WANDR, an expert travel planning AI. 
 You create detailed, personalised, day-by-day travel itineraries.
 You always respond with valid JSON matching the exact schema provided.
 You consider local culture, opening hours, travel time between places, and budget constraints.
 You suggest off-the-beaten-path gems alongside must-see highlights.`,
   generationConfig: {
-    responseMimeType: 'application/json',
+    responseMimeType: "application/json",
     maxOutputTokens: 4096,
     temperature: 0.8,
   },
   safetySettings: [
-    { category: HarmCategory.HARM_CATEGORY_HARASSMENT,        threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-    { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,       threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-    { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+    {
+      category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+      threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    },
+    {
+      category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+      threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    },
+    {
+      category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+      threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    },
   ],
 });
 
@@ -39,7 +61,9 @@ export function buildItineraryPrompt(params: {
   accessibility: string[];
 }): string {
   const days = Math.ceil(
-    (new Date(params.endDate).getTime() - new Date(params.startDate).getTime()) / 86_400_000
+    (new Date(params.endDate).getTime() -
+      new Date(params.startDate).getTime()) /
+      86_400_000,
   );
 
   return `Create a ${days}-day travel itinerary for ${params.destination}.
@@ -49,9 +73,9 @@ Trip details:
 - Total Budget: $${params.budget} USD
 - Travel Style: ${params.travelStyle}
 - Group Size: ${params.groupSize} people
-- Interests: ${params.interests.join(', ')}
-- Dietary Requirements: ${params.dietary.length ? params.dietary.join(', ') : 'None'}
-- Accessibility Needs: ${params.accessibility.length ? params.accessibility.join(', ') : 'None'}
+- Interests: ${params.interests.join(", ")}
+- Dietary Requirements: ${params.dietary.length ? params.dietary.join(", ") : "None"}
+- Accessibility Needs: ${params.accessibility.length ? params.accessibility.join(", ") : "None"}
 
 Return a JSON object with this EXACT structure:
 {
