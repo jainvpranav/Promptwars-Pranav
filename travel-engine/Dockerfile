@@ -1,23 +1,29 @@
-FROM node:20-alpine AS deps
-WORKDIR /app
-COPY package.json package-lock.json* ./
-RUN npm ci
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - build
+      - -t
+      - europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/promptwars-pranav:$COMMIT_SHA
+      - -f
+      - ./travel-engine/Dockerfile    # ← explicit path to Dockerfile
+      - ./travel-engine               # ← build context
 
-FROM node:20-alpine AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-RUN npm run build
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - push
+      - europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/promptwars-pranav:$COMMIT_SHA
 
-FROM node:20-alpine AS runner
-WORKDIR /app
-ENV NODE_ENV=production
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - promptwars-pranav
+      - --image=europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/promptwars-pranav:$COMMIT_SHA
+      - --region=europe-west1
+      - --platform=managed
+      - --allow-unauthenticated
+      - --port=3000
 
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-
-EXPOSE 3000
-CMD ["node", "server.js"]
+images:
+  - europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/promptwars-pranav:$COMMIT_SHA
