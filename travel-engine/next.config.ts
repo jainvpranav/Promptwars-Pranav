@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: "standalone",   // ← add this
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "maps.googleapis.com" },
