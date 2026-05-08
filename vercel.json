@@ -1,0 +1,8 @@
+{
+  "builds": [
+    {
+      "src": "travel-engine/package.json",
+      "use": "@vercel/next"
+    }
+  ]
+}
